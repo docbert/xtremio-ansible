@@ -32,7 +32,7 @@ options:
         description:
             - Consistency Group name
         required: true
-    volume:
+    volumes:
         description:
             - List of volumes in Consistengy Group. Used when createing a new CG, or to modify the volumes in the CG
     state:
@@ -52,7 +52,7 @@ EXAMPLES = '''
     username: admin
     password: Xtrem10
     name: MyCG1
-    volume:
+    volumes:
       - MyVol1
       - MyVol2
       - MyVol3
@@ -72,7 +72,7 @@ EXAMPLES = '''
     username: admin
     password: Xtrem10
     name: MyCG1
-    volume:
+    volumes:
       - MyVol1
       - MyVol4
       - MyVol5
@@ -95,7 +95,7 @@ def run_module():
         username=dict(type='str', required=True),
         password=dict(type='str', required=True, no_log=True),
         name=dict(type='str', required=True),
-        volume=dict(type='list'),
+        volumes=dict(type='list'),
         state=dict(type='str', default='present', choices=['absent', 'present']),
     )
 
@@ -108,7 +108,7 @@ def run_module():
     username = module.params['username']
     password = module.params['password']
     name = module.params['name']
-    volume = module.params['volume']
+    volumes = module.params['volumes']
     state = module.params['state']
 
     try:
@@ -123,7 +123,7 @@ def run_module():
         if state == 'present':
             if not module.check_mode:
                 try:
-                    xtremio.create_cg(name, volume)
+                    xtremio.create_cg(name, volumes)
                 except Exception as e:
                     module.fail_json(msg='error creating CG - ' + str(e))
             changed=True
@@ -140,8 +140,8 @@ def run_module():
             for vol in (cg['vol-list']):
                 currentvol.append(vol[1])
 
-            addvol=list(set(volume)-set(currentvol))
-            delvol=list(set(currentvol)-set(volume))
+            addvol=list(set(volumes)-set(currentvol))
+            delvol=list(set(currentvol)-set(volumes))
 
             for vol in addvol:
                 if not module.check_mode:

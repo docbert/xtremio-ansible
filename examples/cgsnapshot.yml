@@ -1,0 +1,46 @@
+---
+- name: Create snapshot of multiple volumes (via a CG) and map them to a host
+  hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+    xms: xtremio4.scxtremiolab.com
+    xms_username: admin
+    xms_password: Xtrem10
+    targetig: MyDev1-IG
+    cgname: MyCG1
+    ssname: MySnapSet1
+    snapsuffix: Dev1
+    volumes:
+      - MyVol1
+      - MyVol2
+      - MyVol3
+  tasks:
+  - name: Create CG containing volumes
+    xtremio_cg:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      name: "{{ cgname }}"
+      volumes: "{{ volumes }}"
+      state: present
+  - name: Take snapshot of CG
+    xtremio_snapshot:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      sourcecg: "{{ cgname }}"
+      targetss: "{{ ssname }}"
+      suffix: "{{ snapsuffix }}"
+      refresh: false
+      state: present
+  - name: Map snapshots to host
+    xtremio_map:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      volume: "{{ item }}.{{snapsuffix}}"
+      ig: "{{ targetig }}"
+      state: present
+    loop: "{{ volumes }}"
+

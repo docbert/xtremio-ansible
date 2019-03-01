@@ -1,0 +1,57 @@
+---
+- name: Create new XtremIO initigator group and map a new volume to it
+  hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+    xms: xtremio4.scxtremiolab.com
+    xms_username: admin
+    xms_password: Xtrem10
+    hostname: MyHost
+    wwn1: '10:00:00:10:10:10:10:10'
+    wwn2: '10:00:00:10:10:10:10:20'
+    volsize: 50GB
+    os: linux
+  tasks:
+  - name: Create XtremIO Initiator Group
+    xtremio_ig:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      name: "{{ hostname }}-IG"
+      state: present
+  - name: Create XtremIO Initiator 1
+    xtremio_initiator:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      name: "{{ hostname }}-hba1"
+      ig: "{{ hostname }}-IG"
+      os: "{{ os }}"
+      address: "{{ wwn1 }}"
+      state: present
+  - name: Create XtremIO Initiator 2
+    xtremio_initiator:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      name: "{{ hostname }}-hba2"
+      ig: "{{ hostname }}-IG"
+      os: "{{ os }}"
+      address: "{{ wwn2 }}"
+  - name: Create XtremIO Volume
+    xtremio_volume:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      name: "{{ hostname }}-vol1"
+      size: "{{ volsize }}"
+      state: present
+  - name: Map volume to IG
+    xtremio_map:
+      xms: "{{ xms }}"
+      username: "{{ xms_username }}"
+      password: "{{ xms_password }}"
+      ig: "{{ hostname }}-IG"
+      volume: "{{ hostname }}-vol1"
+      state: present
